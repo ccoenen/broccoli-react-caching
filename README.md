@@ -13,17 +13,20 @@ npm install --save-dev broccoli-react-caching
 ```js
 var react = require('broccoli-react-caching');
 
-var outputTree = react(inputTrees);
+var outputTree = react(inputTrees, options);
 ```
 
 * **`inputTrees`**: An array of trees that act as the include paths for
   react jsx files. If you have a single tree, pass `[tree]`.
 
+* **`options`**: An object with additional configuration, see below.
+
 ## options
 
 ```
 react(inputTrees, {
-  encoding: 'something', // encoding of the jsx files (defaults to UTF-8)
+  fileExtension: 'jsx',  // files are matched against this, defaults to 'jsx'
+  encoding: 'UTF-8',     // encoding of the jsx files, defaults to 'UTF-8'
   transformOptions: {    // These are passed to `transform`
     sourceMap: true
   }

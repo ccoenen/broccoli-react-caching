@@ -12,31 +12,18 @@ ReactCaching.prototype.constructor = ReactCaching;
 function ReactCaching (inputTrees, options) {
   if (!(this instanceof ReactCaching)) return new ReactCaching(inputTrees, options);
   if (!Array.isArray(inputTrees)) throw new Error('Expected array for first argument - did you mean [tree] instead of tree?');
-
-  this.options = options || {};
-  this.options.fileExtension = this.options.fileExtension || 'jsx';
-  this.options.fileRegEx = new RegExp("\\." + this.options.fileExtension + '$', 'i');
-  this.options.encoding = this.options.encoding || 'UTF-8';
-  this.options.transformOptions = this.options.transformOptions || {};
-
+  this.options = parseOptions(options);
   CachingWriter.call(this, inputTrees, {filterFromCache: {include: [this.options.fileRegEx]}});
 }
 
 
-ReactCaching.prototype.updateCache = function(includePaths, destDir) {
+ReactCaching.prototype.updateCache = function (includePaths, destDir) {
   var options = this.options;
   includePaths.forEach(function (includePath) {
     var inFiles = glob.sync(path.join(includePath, '/**/*.' + options.fileExtension), { nodir: true });
     inFiles.forEach(function (inFile) {
       debug("Processing ", inFile);
-      var content = fs.readFileSync(inFile, {encoding: options.encoding});
-      var compiled;
-      try {
-        compiled = react(content, options.transformOptions);
-      } catch (e) {
-        console.error("Failed to compile %s (%s)", inFile, e.toString());
-        compiled = "document.write('<div style=\"position: fixed; z-index: 99999999; top: 0; background: black; color: white; padding: 10px\">Failed to compile the React file " + inFile + "</div>');";
-      }
+      var compiled = compileOrFailGracefully(inFile, options);
       var relativePath = path.relative(includePath, inFile);
       var destFile = path.join(destDir, relativePath).replace(options.fileRegEx, '.js');
       debug("output to: %s", destFile);
@@ -45,3 +32,30 @@ ReactCaching.prototype.updateCache = function(includePaths, destDir) {
     });
   });
 };
+
+
+function compileOrFailGracefully (inFile, options) {
+  var content = fs.readFileSync(inFile, {encoding: options.encoding});
+  var compiled;
+  try {
+    compiled = react(content, options.transformOptions);
+  } catch (e) {
+    console.error("Failed to compile %s (%s)", inFile, e.toString());
+    compiled = "document.write('";
+    compiled += '<div style="position: fixed; z-index: 99999999; top: 0; background: black; color: white; padding: 10px">';
+    compiled += '<p>Failed to compile the React file <code>' + inFile + '</code></p>';
+    compiled += '<p>' + e.toString() + '</p>';
+    compiled += "</div>');";
+  }
+  return compiled;
+}
+
+
+function parseOptions(passedOptions) {
+  var options = passedOptions || {};
+  options.fileExtension = options.fileExtension || 'jsx';
+  options.fileRegEx = new RegExp("\\." + options.fileExtension + '$', 'i');
+  options.encoding = options.encoding || 'UTF-8';
+  options.transformOptions = options.transformOptions || {};
+  return options;
+}

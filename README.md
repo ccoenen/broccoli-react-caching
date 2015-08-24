@@ -34,3 +34,14 @@ react(inputTrees, {
 ```
 
 For all possible `transformOptions`, [see transform in react-tools](https://www.npmjs.com/package/react-tools#transform-inputstring-options).
+
+## Developing
+
+I would like to invite you to contribute to this project. Clone this repository
+from github, then run the following in its directory:
+
+    npm install
+
+Start in `index.js`
+
+Happy Hacking!

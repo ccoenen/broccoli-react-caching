@@ -30,7 +30,13 @@ ReactCaching.prototype.updateCache = function(includePaths, destDir) {
     inFiles.forEach(function (inFile) {
       debug("Processing ", inFile);
       var content = fs.readFileSync(inFile, {encoding: options.encoding});
-      var compiled = react(content, options.transformOptions);
+      var compiled;
+      try {
+        compiled = react(content, options.transformOptions);
+      } catch (e) {
+        console.error("Failed to compile %s (%s)", inFile, e.toString());
+        compiled = "document.write('<div style=\"position: fixed; z-index: 99999999; top: 0; background: black; color: white; padding: 10px\">Failed to compile the React file " + inFile + "</div>');";
+      }
       var relativePath = path.relative(includePath, inFile);
       var destFile = path.join(destDir, relativePath).replace(options.fileRegEx, '.js');
       debug("output to: %s", destFile);

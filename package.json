@@ -1,7 +1,7 @@
 {
   "name": "broccoli-react-caching",
   "description": "Caching React compiler for Broccoli",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "Claudius Coenen <opensource@amenthes.de>",
   "main": "index.js",
   "license": "MIT",
